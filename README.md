@@ -1,6 +1,6 @@
 # rooms_2_0
 
-## ROOMS's 2.0 - Run &amp; Collect - Retro Game
+## ROOMS 2.0 - Run &amp; Collect - Retro Game
 
 **Idea:**  
 The idea was born 1981 during my computer lesson at school.
