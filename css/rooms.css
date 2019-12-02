@@ -1,0 +1,51 @@
+h1 { font-size: 3.5rem; }
+h2 { font-size: 3.0rem; }
+h3 { font-size: 2.5rem; }
+h4 { font-size: 2.0rem; }
+h5 { font-size: 1.5rem; }
+h6 { font-size: 1.0rem; }
+
+p { font-size: 1.5rem; }
+
+header h1 {
+    text-shadow: 0px 0px 20px #00ff00;
+}
+
+#area {
+    box-shadow:0px 0px 45px 20px #00ff0055;
+    padding: 40px;
+    border: 2px solid #00ff0055;
+    border-radius: 20px;
+}
+
+#area #control {
+    padding-right:20px;
+}
+#instruction {
+    color: #00ff00cc;
+}
+
+.indent {
+    margin-left: 20px;
+} 
+
+.btn {
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn:hover {
+    color: #00ff0099;
+}
+
+.btn p {
+    line-height: 1.9rem;
+}
+
+.ls-1 { letter-spacing: 1px; }
+.ls-2 { letter-spacing: 2px; }
+.ls-3 { letter-spacing: 3px; }
+.ls-4 { letter-spacing: 4px; }
+.ls-5 { letter-spacing: 5px; }
+.ls-6 { letter-spacing: 6px; }
+.ls-10 { letter-spacing: 10px; }
