@@ -4,7 +4,8 @@
 
 **Idea:**  
 The idea was born 1981 during my computer lesson at school.
-Moving a block as player automatically through roomes to collect and let 
+Moving a block as player automatically through roomes to collect things.
+The block get a new randomized direction if it had contact with a wall.
 
 **Implementation:**
 I have implemented this game first on a personal computer (Commodore PET 2001)
