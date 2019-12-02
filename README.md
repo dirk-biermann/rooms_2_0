@@ -24,5 +24,6 @@ with the integrated programming language BASIC and 32KB ram.
 No floppy disc / hard disk was available. The source was saved on a music tape. 
 
 More detailed information at [Wikipedia](https://de.wikipedia.org/wiki/PET_2001). 
+
 ![PET-2001](./images/pet-2001-small.png)
 
