@@ -10,6 +10,10 @@ Number.prototype.mx = function() {
   return this * 16;
 }
 
+Number.prototype.padDigits = function(digits) {
+    return Array(Math.max(digits - String(this).length + 1, 0)).join(0) + this;
+}
+
 window.onload = function() {
     newRooms = new Rooms2( "canvas", (40).mx(), (25).mx() ); 
 
@@ -19,7 +23,7 @@ window.onload = function() {
             newRooms.startGame();
         } else {
             document.getElementById("btn-txt").innerText = "start game";           
-            newRooms.stopGame(); 
+            newRooms.resetGame(); 
         }
     };
 };
@@ -222,13 +226,22 @@ class Rooms2 extends CanvasGame{
         this.thingLoaded = false;
         this.thingImage.onload = () => { this.thingLoaded = true; };
         
+        this.leftTime = 0;
+        this.numberOfCollectedItems = 0;
+        this.timeFrame = 125;
+
         this.createRooms();
         this.drawRooms();
+        this.drawScoreAndTime();
+
     }
 
     startGame(){
         this.started = true;
-        this.createThings(20);
+        this.numberOfCollextedItems = 0;
+        this.leftTime = 1.5 * 60 * 1000;
+
+        this.createThings(25);
 
         this.player = new Player((1).mx(), (1).mx(), this.ctx, this.playerImage);
         this.player.setNewDirection();
@@ -236,12 +249,16 @@ class Rooms2 extends CanvasGame{
 
         // bind func 'updateIslandRacerState' to be available in 'setInterval()'
         this.updateRooms = this.updateRooms.bind(this);
-        this.interval = setInterval(this.updateRooms, 150);
+        this.interval = setInterval(this.updateRooms, this.timeFrame);
     }
 
     stopGame(){
         this.started = false;
         clearInterval(this.interval);
+    }
+
+    resetGame(){
+        this.stopGame();
 
         this.thingObjects = [];
         delete this.player;
@@ -288,17 +305,47 @@ class Rooms2 extends CanvasGame{
     }
 
     updateRooms() {
-        let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, true);
+        if ( this.checkGameOver() === false ) {
+            this.leftTime -= this.timeFrame;
 
-        if( collision.isCollided === true ) {
-            console.log( "collect", collision.index );
+            let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, true);
+            if( collision.isCollided === true ) {
+                this.thingObjects.splice( collision.index, 1 );
+                this.numberOfCollectedItems++;
+            }
+            while( this.checkObjectCollisionBoolean(this.player, this.wallObjects, false) ){
+                this.player.setNewDirection();
+            };
+            this.drawRooms();
+            this.drawScoreAndTime();
+        };
+    }
+
+    checkGameOver(){
+        if( this.leftTime <= 0 && this.thingObjects.length > 0 ){
+            this.stopGame();
+            return true;
+        }
+        if( this.thingObjects.length === 0 ){
+            this.stopGame();
+            return true;
+        }
+        return false;
+    }
+
+    drawScoreAndTime(){
+        this.ctx.font = "18px pxplus_ibm_vga9regular";
+        this.ctx.fillStyle = "black";
+        let score = "";
+        let time = "";
+
+        if( this.started === true ){
+            score = this.numberOfCollectedItems.padDigits(3);
+            time = `${Math.floor(this.leftTime/1000).padDigits(3)} sec`;
         }
 
-        while( this.checkObjectCollisionBoolean(this.player, this.wallObjects, false) ){
-            this.player.setNewDirection();
-        };
-
-        this.drawRooms();
+        this.ctx.fillText ( `Score: ${score}`, (15).mx(), (11).mx());                  
+        this.ctx.fillText ( `Time:  ${time}`, (15).mx(), (12).mx());                  
     }
 
     drawRooms() {
@@ -364,5 +411,3 @@ class Rooms2 extends CanvasGame{
         return { isCollided: objectCollision, index : indexFound };
     }
 }
-
-// --------------------
