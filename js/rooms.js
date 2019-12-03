@@ -227,7 +227,7 @@ class Rooms2 extends CanvasGame{
         this.thingImage.onload = () => { this.thingLoaded = true; };
         
         this.leftTime = 0;
-        this.maxTime = 1.5 * 10 * 1000;
+        this.maxTime = 1.5 * 60 * 1000;
         this.numberOfCollectedItems = 0;
         this.timeFrame = 100;
 
@@ -242,7 +242,7 @@ class Rooms2 extends CanvasGame{
         this.numberOfCollextedItems = 0;
         this.leftTime = this.maxTime;
 
-        this.createThings(1);
+        this.createThings(25);
 
         this.player = new Player((1).mx(), (1).mx(), this.ctx, this.playerImage);
         this.player.setNewDirection();
