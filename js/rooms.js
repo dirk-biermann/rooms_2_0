@@ -227,19 +227,20 @@ class Rooms2 extends CanvasGame{
         this.thingImage.onload = () => { this.thingLoaded = true; };
         
         this.leftTime = 0;
+        this.maxTime = 1.5 * 60 * 1000;
         this.numberOfCollectedItems = 0;
-        this.timeFrame = 125;
+        this.timeFrame = 100;
 
         this.createRooms();
         this.drawRooms();
+        this.drawGrid();
         this.drawScoreAndTime();
-
     }
 
     startGame(){
         this.started = true;
         this.numberOfCollextedItems = 0;
-        this.leftTime = 1.5 * 60 * 1000;
+        this.leftTime = this.maxTime;
 
         this.createThings(25);
 
@@ -264,6 +265,7 @@ class Rooms2 extends CanvasGame{
         delete this.player;
 
         this.drawRooms();
+        this.drawGrid();
     }
 
     createRooms(){
@@ -305,7 +307,8 @@ class Rooms2 extends CanvasGame{
     }
 
     updateRooms() {
-        if ( this.checkGameOver() === false ) {
+        let checkResult = this.checkGameOver();
+        if ( checkResult === 0 ) {
             this.leftTime -= this.timeFrame;
 
             let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, true);
@@ -317,35 +320,66 @@ class Rooms2 extends CanvasGame{
                 this.player.setNewDirection();
             };
             this.drawRooms();
+            this.drawGrid();
             this.drawScoreAndTime();
+        } else {
+            this.drawRooms();
+            this.drawResult( checkResult === 1 );
+            this.drawGrid();
+            this.stopGame();
         };
     }
 
     checkGameOver(){
         if( this.leftTime <= 0 && this.thingObjects.length > 0 ){
-            this.stopGame();
-            return true;
+            return -1;
         }
         if( this.thingObjects.length === 0 ){
-            this.stopGame();
-            return true;
+            return 1;
         }
-        return false;
+        return 0;
     }
 
     drawScoreAndTime(){
-        this.ctx.font = "18px pxplus_ibm_vga9regular";
-        this.ctx.fillStyle = "black";
-        let score = "";
-        let time = "";
-
         if( this.started === true ){
-            score = this.numberOfCollectedItems.padDigits(3);
-            time = `${Math.floor(this.leftTime/1000).padDigits(3)} sec`;
-        }
+            this.ctx.font = "18px pxplus_ibm_vga9regular";
+            this.ctx.fillStyle = "black";
+            this.ctx.textAlign = "left";
 
-        this.ctx.fillText ( `Score: ${score}`, (15).mx(), (11).mx());                  
-        this.ctx.fillText ( `Time:  ${time}`, (15).mx(), (12).mx());                  
+            let score = this.numberOfCollectedItems.padDigits(3);
+            let time = `${Math.floor(this.leftTime/1000).padDigits(3)} sec`;
+
+            this.ctx.fillText ( `Score: ${score}`, (15).mx(), (11).mx());                  
+            this.ctx.fillText ( `Time:  ${time}`, (15).mx(), (12).mx());  
+        }       
+    }
+
+    drawResult( win ){
+        this.ctx.fillStyle = "#25E525";
+        this.ctx.fillRect( (5).mx(), (5).mx(), (30).mx(), (15).mx() );
+
+        this.ctx.strokeStyle  = "black";
+        this.ctx.lineWidth = 2.5;
+        this.ctx.strokeRect( (6).mx(), (6).mx(), (28).mx(), (13).mx() );
+
+        this.ctx.font = "40px pxplus_ibm_vga9regular";
+        this.ctx.fillStyle = "black";
+        
+        this.ctx.textAlign = "center";
+        this.ctx.fillText ( `G A M E   O V E R`, (20).mx(), (9).mx());                  
+        
+        if( win === true ){
+            this.ctx.font = "70px pxplus_ibm_vga9regular";
+            this.ctx.fillText ( `YOU WIN`, (20).mx(), (14).mx());                  
+            this.ctx.font = "20px pxplus_ibm_vga9regular";
+            let usedTime = Math.floor((this.maxTime - this.leftTime)/1000);
+            this.ctx.fillText ( `in ${usedTime} seconds !`, (20).mx(), (17).mx());                  
+        } else {
+            this.ctx.font = "70px pxplus_ibm_vga9regular";
+            this.ctx.fillText ( `YOU LOOSE`, (20).mx(), (14).mx());                  
+            this.ctx.font = "20px pxplus_ibm_vga9regular";
+            this.ctx.fillText ( `Sorry, try again!`, (20).mx(), (17).mx());                  
+        }
     }
 
     drawRooms() {
@@ -354,8 +388,6 @@ class Rooms2 extends CanvasGame{
         this.wallObjects.map( (wallObject) => {wallObject.update(); } );
         this.thingObjects.map( (thingObject) => {thingObject.update(); } );
         if( this.player !== undefined ) this.player.update();
-
-        this.drawGrid();
     }
 
     clearCanvas(){
@@ -363,20 +395,18 @@ class Rooms2 extends CanvasGame{
     }
 
     drawGrid() {
-        this.ctx.strokeStyle = "#00000033";
+        this.ctx.strokeStyle = "#00000066";
         this.ctx.lineWidth = 0.5;
-        this.ctx.setLineDash([2,2]);
+        this.ctx.setLineDash([]);
 
         this.ctx.beginPath();
-        for( let row=1; row<25; row++) {
-            this.ctx.moveTo(0,(row).mx());
-            this.ctx.lineTo((40).mx(),(row).mx());
-        }
-        for( let col=1; col<40; col++) {
-            this.ctx.moveTo((col).mx(),0);
-            this.ctx.lineTo((col).mx(),(25).mx());
+        for( let y=0; y<(25).mx(); y+=3) {
+            this.ctx.moveTo(0,y);
+            this.ctx.lineTo((40).mx(),y);
         }
         this.ctx.stroke();
+
+        this.ctx.strokeStyle = "#000000";
         this.ctx.setLineDash([]);
     }
 
