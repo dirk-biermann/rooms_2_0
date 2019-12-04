@@ -455,7 +455,6 @@ class Rooms2 extends CanvasGame{
 
     drawRooms() {
         this.clearCanvas();
-
         this.wallObjects.map( (wallObject) => {wallObject.update(); } );
         this.thingObjects.map( (thingObject) => {thingObject.update(); } );
         if( this.player !== undefined && this.checkResults === 0) this.player.update();
