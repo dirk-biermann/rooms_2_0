@@ -1,0 +1,14 @@
+/* 25E525 / 00ff00 */
+
+.bkgColor { background-color: #00ff00; }
+
+.txtColor { color: #00ff00; }
+.txtColorSemi { color: #00ff00cc; }
+
+.brdColor { border-color: #00ff00; }
+.brdColorDark { border-color: #25E52555; }
+
+.btn:hover { color: #25E52599; }
+
+.txtShadow { text-shadow: 0px 0px 20px #25E525; }
+.boxShadow { box-shadow:0px 0px 45px 20px #25E52555; }

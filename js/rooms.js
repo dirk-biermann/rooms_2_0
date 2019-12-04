@@ -6,6 +6,10 @@
 //                                          
 // -------------------------------------------------------------------
 
+// -------------------------------------
+// prototypes
+// -------------------------------------
+
 Number.prototype.mx = function() {
   return this * 16;
 }
@@ -14,9 +18,18 @@ Number.prototype.padDigits = function(digits) {
     return Array(Math.max(digits - String(this).length + 1, 0)).join(0) + this;
 }
 
+// -------------------------------------
+// inital function
+// -------------------------------------
 window.onload = function() {
-    newRooms = new Rooms2( "canvas", (40).mx(), (25).mx() ); 
+    let newRooms = new Rooms2( "canvas", (40).mx(), (25).mx(), 0 ); 
 
+    // add sounds
+    newRooms.addSound( "bounce", "./sound/bounce.wav" );
+    newRooms.addSound( "collect", "./sound/collect.wav" );
+    newRooms.addSound( "win", "./sound/win.wav" );
+
+    // add button onclick events
     document.getElementById("start-button").onclick = function() {
         if( newRooms.started === false ) {
             document.getElementById("btn-txt").innerText = "reset game";
@@ -26,7 +39,44 @@ window.onload = function() {
             newRooms.resetGame(); 
         }
     };
+    document.getElementById("chg-color-g").onclick = function() {
+        changeCSSColor(0);
+        changeBtnSelection(0);
+        newRooms.chgColor(0);
+    };
+    document.getElementById("chg-color-a").onclick = function() {
+        changeCSSColor(1);
+        changeBtnSelection(1);
+        newRooms.chgColor(1);
+    };
+    document.getElementById("chg-color-w").onclick = function() {
+        changeCSSColor(2);
+        changeBtnSelection(2);
+        newRooms.chgColor(2);
+    };
+
 };
+
+// -------------------------------------------------------------------
+// CLASS | sound
+// -------------------------------------------------------------------
+class Sound{
+    constructor(src) {
+        this.sound = document.createElement("audio");
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "none";
+        document.body.appendChild(this.sound);
+    }
+
+    play = function(){
+        this.sound.play();
+    }
+    stop = function(){
+        this.sound.pause();
+    }    
+}
 
 // -------------------------------------------------------------------
 // CLASS | generic canvas game
@@ -58,29 +108,23 @@ class Rectangle{
         this.id = "rect";
     }
 
+    chgColor( color ){ this.color = color; }
+
     update() {
         this.ctx.fillStyle = this.color;
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
-    left() { 
-        return this.x;
-    }
-    right() {
-        return this.x + this.width;
-    }
-    top() {
-        return this.y;
-    }
-    bottom() {
-        return this.y + this.height;
-    }
+    left() { return this.x; }
+    right() { return this.x + this.width; }
+    top() { return this.y; }
+    bottom() { return this.y + this.height; }
 
-    isCollidedWith(obstacle, atOriginal) {
+    isCollidedWith(obstacle, inclSpeed) {
         //since the player is also a gameObject we have to make sure that it doesn't "collide" with itself
         if (this === obstacle) return false;
 
-        if( atOriginal === false ) {
+        if( inclSpeed === true ) {
             this.x += this.speedX;
             this.y += this.speedY;
         }
@@ -92,13 +136,12 @@ class Rectangle{
             this.left() >= obstacle.right()
             );
             
-        if( atOriginal === false ) {
+        if( inclSpeed === true ) {
             this.x -= this.speedX;
             this.y -= this.speedY;
         }        
         return isCollided;
     }
-
 }
 
 // -------------------------------------------------------------------
@@ -112,13 +155,14 @@ class MovingRectangle extends Rectangle{
         this.id = "moving-rect";
     }
 
+    chgColor( color ){
+        super.chgColor(color);
+    }
+
     update() {
         this.x += this.speedX;
         this.y += this.speedY;
         super.update();
-
-        //this.ctx.fillStyle = this.color;
-        //this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 }
 
@@ -131,37 +175,47 @@ class MovingRectangle extends Rectangle{
 // CLASS | wall object
 // -------------------------------------------------------------------
 class Wall extends Rectangle{
-    constructor(x, y, width, height, ctx){
-        super(x, y, width, height, "#25E525", ctx);
+    constructor(x, y, width, height, color, ctx){
+        super(x, y, width, height, color, ctx);
         this.id = "wall";
     }
+
+    chgColor( color ){
+        super.chgColor(color);
+    }
+
 }
 
 // -------------------------------------------------------------------
 // CLASS | thing object
 // -------------------------------------------------------------------
 class Thing extends Rectangle{
-    constructor(x, y, ctx, img){
-        super(x, y, (1).mx(), (1).mx(), "#25E52555", ctx);
+    constructor(x, y, color, ctx, img){
+        super(x, y, (1).mx(), (1).mx(), "#000", ctx);
         this.id = "thing";
-
+        this.color = color;
         this.thingImage = img;
     }
-    update(){
-        this.ctx.drawImage(this.thingImage,0,0,this.thingImage.width, this.thingImage.height, this.x, this.y, this.width, this.height);
+
+    chgColor( color ){
+        this.color = color;
     }
 
+    update(){
+        this.ctx.drawImage(this.thingImage,(Number(this.color)).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
+    }
 }
 
 // -------------------------------------------------------------------
 // CLASS | player object
 // -------------------------------------------------------------------
 class Player extends MovingRectangle{
-    constructor(x, y, ctx, img){
-        super(x, y, (1).mx(), (1).mx(), "#25E52555", ctx);
+    constructor(x, y, color, ctx, img){
+        super(x, y, (1).mx(), (1).mx(), "#000", ctx);
         this.id = "player";
         
         this.playerImage = img;
+        this.color = color;
 
         document.onkeyup = e => {
             switch (e.keyCode) {
@@ -190,20 +244,24 @@ class Player extends MovingRectangle{
         };
     }
 
+    chgColor( color ){
+        this.color = color;
+    }
+
     update(){
         this.x += this.speedX;
         this.y += this.speedY;
-        this.ctx.drawImage(this.playerImage,0,0,this.playerImage.width, this.playerImage.height, this.x, this.y, this.width, this.height);
+        this.ctx.drawImage(this.playerImage,(this.color).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
     setNewDirection(){
         this.speedX = 0;
         this.speedY = 0;
-        let dir = Math.floor( Math.random() * 4 );
-        if( dir === 0 ) this.speedY = (-1).mx();
-        if( dir === 1 ) this.speedY = (1).mx();
-        if( dir === 2 ) this.speedX = (-1).mx();
-        if( dir === 3 ) this.speedX = (1).mx();
+        let dir = Math.floor( Math.random() * 12 );
+        if( dir%4 === 0 ) this.speedY = (-1).mx();
+        if( dir%4 === 1 ) this.speedY = (1).mx();
+        if( dir%4 === 2 ) this.speedX = (-1).mx();
+        if( dir%4 === 3 ) this.speedX = (1).mx();
     }
 }
 
@@ -211,10 +269,15 @@ class Player extends MovingRectangle{
 // CLASS | ROOMS 2.0 canvas game
 // -------------------------------------------------------------------
 class Rooms2 extends CanvasGame{
-    constructor(container, width, height){
+    constructor(container, width, height, color){
         super(container, width, height);
         this.wallObjects = [];
         this.thingObjects = [];
+
+        this.color = [ "#25E525", "#EEBF00", "#B7B7B7" ];
+        this.curColor = color;
+
+        this.sounds = [];
 
         this.playerImage = new Image();
         this.playerImage.src = "./images/player.png";
@@ -231,20 +294,39 @@ class Rooms2 extends CanvasGame{
         this.numberOfCollectedItems = 0;
         this.timeFrame = 100;
 
+        this.checkResults = 0;
+
         this.createRooms();
         this.drawRooms();
         this.drawGrid();
         this.drawScoreAndTime();
     }
+    
+    addSound( name, sound ){
+        this.sounds.push( [name, new Sound( sound )] );
+    }
+
+    chgColor( id ){
+        this.curColor = id;
+
+        if( this.player !== undefined ) { this.player.chgColor( id ); }
+        this.wallObjects.map( (wallObject) => {wallObject.chgColor( this.color[id] ); } );
+        this.thingObjects.map( (thingObject) => {thingObject.chgColor( id ); } );
+
+        this.drawRooms();
+        this.drawGrid();
+        this.drawScoreAndTime();
+        if( this.checkResults !== 0 ) this.drawResult( this.checkResults === 1 );
+    }
 
     startGame(){
         this.started = true;
-        this.numberOfCollextedItems = 0;
+        this.numberOfCollectedItems = 0;
         this.leftTime = this.maxTime;
 
-        this.createThings(25);
+        this.createThings(2);
 
-        this.player = new Player((1).mx(), (1).mx(), this.ctx, this.playerImage);
+        this.player = new Player((1).mx(), (1).mx(), this.curColor, this.ctx, this.playerImage);
         this.player.setNewDirection();
         this.insertXYIntoObject( this.player );        
 
@@ -254,89 +336,77 @@ class Rooms2 extends CanvasGame{
     }
 
     stopGame(){
-        this.started = false;
         clearInterval(this.interval);
     }
 
     resetGame(){
         this.stopGame();
+        this.started = false;
 
         this.thingObjects = [];
         delete this.player;
-
         this.drawRooms();
         this.drawGrid();
     }
 
     createRooms(){
-        // outer walls
-        this.wallObjects.push( new Wall(0,0,(40).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((39).mx(),0,(40).mx(),(25).mx(),this.ctx))
-        this.wallObjects.push( new Wall(0,(24).mx(),(40).mx(),(25).mx(),this.ctx))
-        this.wallObjects.push( new Wall(0,0,(1).mx(),(24).mx(),this.ctx))
-
-        // inner block
-        this.wallObjects.push( new Wall((14).mx(),(10).mx(),(12).mx(),(5).mx(),this.ctx))
-    
-        // horizontal walls inkl.door
-        this.wallObjects.push( new Wall((1).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((8).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-
-        this.wallObjects.push( new Wall((26).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((33).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-
-        // vertical walls inkl.door
-        this.wallObjects.push( new Wall((14).mx(),(1).mx(),(1).mx(),(2).mx(),this.ctx))
-        this.wallObjects.push( new Wall((14).mx(),(4).mx(),(1).mx(),(6).mx(),this.ctx))
-
-        this.wallObjects.push( new Wall((25).mx(),(1).mx(),(1).mx(),(6).mx(),this.ctx))
-        this.wallObjects.push( new Wall((25).mx(),(8).mx(),(1).mx(),(2).mx(),this.ctx))
-
-        this.wallObjects.push( new Wall((14).mx(),(15).mx(),(1).mx(),(2).mx(),this.ctx))
-        this.wallObjects.push( new Wall((14).mx(),(18).mx(),(1).mx(),(6).mx(),this.ctx))
-
-        this.wallObjects.push( new Wall((25).mx(),(15).mx(),(1).mx(),(6).mx(),this.ctx))
-        this.wallObjects.push( new Wall((25).mx(),(22).mx(),(1).mx(),(2).mx(),this.ctx))
+        let walls = [
+                        [ 0, 0,40, 1], [39, 0,40,25], [ 0,24,40,25], [ 0, 0, 1,24], // outer walls
+                        [14,10,12, 5], // inner block
+                        [ 1,12, 6, 1], [ 8,12, 6, 1], [26,12, 6, 1], [33,12, 6, 1], // horizontal walls
+                        [14, 1, 1, 2], [14, 4, 1, 6], [25, 1, 1, 6], [25, 8, 1, 2], // vertical walls inkl.door
+                        [14,15, 1, 2], [14,18, 1, 6], [25,15, 1, 6], [25,22, 1, 2]  // vertical walls inkl.door
+                    ];
+        walls.map( (wallData) => {
+            this.wallObjects.push( new Wall((wallData[0]).mx(),(wallData[1]).mx(),
+                                            (wallData[2]).mx(),(wallData[3]).mx(),this.color[this.curColor],this.ctx));
+            } );
     }
 
     createThings( numberThings ){
         for( let id=0; id < numberThings; id++ ){
-            this.thingObjects.push( new Thing(0,0,this.ctx, this.thingImage) );
+            this.thingObjects.push( new Thing(0,0,this.curColor,this.ctx, this.thingImage) );
             this.insertXYIntoObject(this.thingObjects[id]);
         }
     }
 
     updateRooms() {
-        let checkResult = this.checkGameOver();
-        if ( checkResult === 0 ) {
+        this.checkResults = this.checkGameOver();
+        if ( this.checkResults === 0 ) {
             this.leftTime -= this.timeFrame;
 
-            let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, true);
+            let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, false);
             if( collision.isCollided === true ) {
+                this.sounds.map( sound => { if( sound[0] === "collect" ) sound[1].play(); } );
                 this.thingObjects.splice( collision.index, 1 );
                 this.numberOfCollectedItems++;
             }
-            while( this.checkObjectCollisionBoolean(this.player, this.wallObjects, false) ){
+
+            let play = false;
+            while( this.checkObjectCollisionBoolean(this.player, this.wallObjects, true) ){
+                if( play === false ){
+                    this.sounds.map( sound => { if( sound[0] === "bounce" ) sound[1].play(); } );
+                    play = true;
+                }
                 this.player.setNewDirection();
             };
+
             this.drawRooms();
             this.drawGrid();
             this.drawScoreAndTime();
         } else {
+            this.player.speedX = 0;
+            this.player.speedY = 0;
             this.drawRooms();
-            this.drawResult( checkResult === 1 );
+            this.drawResult( this.checkResults === 1 );
             this.drawGrid();
             this.stopGame();
         };
     }
 
     checkGameOver(){
-        if( this.leftTime <= 0 && this.thingObjects.length > 0 ){
-            return -1;
-        }
-        if( this.thingObjects.length === 0 ){
-            return 1;
-        }
+        if( this.leftTime <= 0 && this.thingObjects.length > 0 ){ return -1; }
+        if( this.thingObjects.length === 0 ){ return 1; }
         return 0;
     }
 
@@ -355,7 +425,7 @@ class Rooms2 extends CanvasGame{
     }
 
     drawResult( win ){
-        this.ctx.fillStyle = "#25E525";
+        this.ctx.fillStyle = this.color[this.curColor];
         this.ctx.fillRect( (5).mx(), (5).mx(), (30).mx(), (15).mx() );
 
         this.ctx.strokeStyle  = "black";
@@ -373,7 +443,8 @@ class Rooms2 extends CanvasGame{
             this.ctx.fillText ( `YOU WIN`, (20).mx(), (14).mx());                  
             this.ctx.font = "20px pxplus_ibm_vga9regular";
             let usedTime = Math.floor((this.maxTime - this.leftTime)/1000);
-            this.ctx.fillText ( `in ${usedTime} seconds !`, (20).mx(), (17).mx());                  
+            this.ctx.fillText ( `in ${usedTime} seconds !`, (20).mx(), (17).mx()); 
+            this.sounds.map( sound => { if( sound[0] === "win" ) sound[1].play(); } );     
         } else {
             this.ctx.font = "70px pxplus_ibm_vga9regular";
             this.ctx.fillText ( `YOU LOOSE`, (20).mx(), (14).mx());                  
@@ -387,7 +458,7 @@ class Rooms2 extends CanvasGame{
 
         this.wallObjects.map( (wallObject) => {wallObject.update(); } );
         this.thingObjects.map( (thingObject) => {thingObject.update(); } );
-        if( this.player !== undefined ) this.player.update();
+        if( this.player !== undefined && this.checkResults === 0) this.player.update();
     }
 
     clearCanvas(){
@@ -418,8 +489,8 @@ class Rooms2 extends CanvasGame{
             object.x = (Math.floor( Math.random() * 40 )).mx();            
             object.y = (Math.floor( Math.random() * 25 )).mx();            
 
-            collisionThing = this.checkObjectCollisionBoolean(object, this.thingObjects, true);
-            collisionWall = this.checkObjectCollisionBoolean(object, this.wallObjects, true);
+            collisionThing = this.checkObjectCollisionBoolean(object, this.thingObjects, false);
+            collisionWall = this.checkObjectCollisionBoolean(object, this.wallObjects, false);
         } while( collisionThing || collisionWall )
     }
  

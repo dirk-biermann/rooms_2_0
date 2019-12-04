@@ -7,22 +7,15 @@ h6 { font-size: 1.0rem; }
 
 p { font-size: 1.5rem; }
 
-header h1 {
-    text-shadow: 0px 0px 20px #25E525;
-}
-
 #area {
-    box-shadow:0px 0px 45px 20px #25E52555;
     padding: 40px;
-    border: 2px solid #25E52555;
+    border-style: solid;
+    border-width: 2px;
     border-radius: 20px;
 }
 
 #area #control {
     padding-right:20px;
-}
-#instruction {
-    color: #00ff00cc;
 }
 
 .indent {
@@ -30,22 +23,24 @@ header h1 {
 } 
 
 .btn {
+    font-size: 1.0rem;
     cursor: pointer;
     display: inline-block;
 }
 
-.btn:hover {
-    color: #25E52599;
+.btn p {
+    line-height: 1.8rem;
+    font-size: 1.4rem;
 }
 
-.btn p {
-    line-height: 1.9rem;
-}
+.fish { margin-left: 30px; }
 
 .ls-1 { letter-spacing: 1px; }
-.ls-2 { letter-spacing: 2px; }
+.ls-2 { letter-spacing: 0px; }
 .ls-3 { letter-spacing: 3px; }
 .ls-4 { letter-spacing: 4px; }
 .ls-5 { letter-spacing: 5px; }
 .ls-6 { letter-spacing: 6px; }
 .ls-10 { letter-spacing: 10px; }
+
+.selected span { font-style: italic; text-decoration: underline; }
