@@ -33,6 +33,15 @@ p { font-size: 1.5rem; }
     font-size: 1.4rem;
 }
 
+#chg-sound span::before {
+    content: "N";
+}
+
+#chg-sound.selected span::before {
+    content: "Y";
+}
+
+
 .fish { margin-left: 30px; }
 
 .ls-1 { letter-spacing: 1px; }
@@ -43,4 +52,4 @@ p { font-size: 1.5rem; }
 .ls-6 { letter-spacing: 6px; }
 .ls-10 { letter-spacing: 10px; }
 
-.selected span { font-style: italic; text-decoration: underline; }
+.selected span { text-decoration: underline; text-decoration-style: double; }
