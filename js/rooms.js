@@ -324,7 +324,7 @@ class Rooms2 extends CanvasGame{
         this.numberOfCollectedItems = 0;
         this.leftTime = this.maxTime;
 
-        this.createThings(2);
+        this.createThings(25);
 
         this.player = new Player((1).mx(), (1).mx(), this.curColor, this.ctx, this.playerImage);
         this.player.setNewDirection();
