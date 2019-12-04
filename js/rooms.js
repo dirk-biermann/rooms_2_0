@@ -39,19 +39,23 @@ window.onload = function() {
             newRooms.resetGame(); 
         }
     };
+    document.getElementById("chg-sound").onclick = function() {
+        changeSoundBtnSelection("chg-sound", 1);
+        newRooms.toggleSound();
+    };
     document.getElementById("chg-color-g").onclick = function() {
         changeCSSColor(0);
-        changeBtnSelection(0);
+        changeColorBtnSelection("chg-color", 2);
         newRooms.chgColor(0);
     };
     document.getElementById("chg-color-a").onclick = function() {
         changeCSSColor(1);
-        changeBtnSelection(1);
+        changeColorBtnSelection("chg-color", 3);
         newRooms.chgColor(1);
     };
     document.getElementById("chg-color-w").onclick = function() {
         changeCSSColor(2);
-        changeBtnSelection(2);
+        changeColorBtnSelection("chg-color", 4);
         newRooms.chgColor(2);
     };
 
@@ -217,31 +221,49 @@ class Player extends MovingRectangle{
         this.playerImage = img;
         this.color = color;
 
-        document.onkeyup = e => {
-            switch (e.keyCode) {
-                case 37:
-                    this.speedY = 0;
-                    this.speedX = (-1).mx();
-                break;
+        this.KEY = { BACKSPACE: 8, TAB:       9, RETURN:   13, ESC:      27, SPACE:    32, 
+                     PAGEUP:   33, PAGEDOWN: 34, END:      35, HOME:     36, 
+                     LEFT:     37, UP:       38, RIGHT:    39, DOWN:     40, 
+                     INSERT:   45, DELETE:   46, ZERO:     48, 
+                     ONE: 49, TWO: 50, THREE: 51, FOUR: 52, FIVE: 53, SIX: 54, SEVEN: 55, EIGHT: 56, NINE: 57,
+                     A: 65, B: 66, C: 67, D: 68, E: 69, F: 70, G: 71, H: 72, I: 73, J: 74, K: 75, L: 76, 
+                     M: 77, N: 78, O: 79, P: 80, Q: 81, R: 82, S: 83, T: 84, U: 85, V: 86, W: 87, X: 88, 
+                     Y: 89, Z: 90,
+                     TILDA: 192 };
+        
+        //this.onkey = this.onkey.bind(this);
 
-                case 39:
-                    this.speedY = 0;
-                    this.speedX = (1).mx();
-                break;
+        document.addEventListener('keydown', ev => { return this.onKey(ev, ev.keyCode, true);  }, false );
+        document.addEventListener('keyup',  ev => { return this.onKey(ev, ev.keyCode, false); }, false );
+    }
 
-                case 38:
-                    this.speedX = 0;
-                    this.speedY = (-1).mx();
-                break;
+    onKey(ev, key, pressed) {
+        if( !pressed ) return;
+        switch(key) {
+            case this.KEY.LEFT:
+                this.speedY = 0;
+                this.speedX = (-1).mx();
+                ev.preventDefault();
+            break;
 
-                case 40:
-                    this.speedX = 0;
-                    this.speedY = (1).mx();
-                break;
+            case this.KEY.RIGHT:
+                this.speedY = 0;
+                this.speedX = (1).mx();
+                ev.preventDefault();
+            break;
 
-                default:
-            }
-        };
+            case this.KEY.UP:
+                this.speedX = 0;
+                this.speedY = (-1).mx();
+                ev.preventDefault();
+            break;
+
+            case this.KEY.DOWN:
+                this.speedX = 0;
+                this.speedY = (1).mx();
+                ev.preventDefault();
+            break;
+        }
     }
 
     chgColor( color ){
@@ -290,11 +312,18 @@ class Rooms2 extends CanvasGame{
         this.thingImage.onload = () => { this.thingLoaded = true; };
         
         this.leftTime = 0;
-        this.maxTime = 1.5 * 60 * 1000;
+        this.currentLevel = 1;
+        this.maxTime = 90 * 1000; // 1.5 min
         this.numberOfCollectedItems = 0;
         this.timeFrame = 100;
+        this.totalScore = 0;
+        this.numberThings = 25;
 
         this.checkResults = 0;
+        this.playSound = true;
+        this.activateSound = 0;
+
+        this.font = "bigblue_terminalplusregular";
 
         this.createRooms();
         this.drawRooms();
@@ -302,6 +331,10 @@ class Rooms2 extends CanvasGame{
         this.drawScoreAndTime();
     }
     
+    toggleSound(){
+        this.activateSound = 1 - this.activateSound;
+    }
+
     addSound( name, sound ){
         this.sounds.push( [name, new Sound( sound )] );
     }
@@ -324,7 +357,7 @@ class Rooms2 extends CanvasGame{
         this.numberOfCollectedItems = 0;
         this.leftTime = this.maxTime;
 
-        this.createThings(25);
+        this.createThings(this.numberThings);
 
         this.player = new Player((1).mx(), (1).mx(), this.curColor, this.ctx, this.playerImage);
         this.player.setNewDirection();
@@ -342,6 +375,8 @@ class Rooms2 extends CanvasGame{
     resetGame(){
         this.stopGame();
         this.started = false;
+        this.totalScore = 0;
+        this.currentLevel = 1;
 
         this.thingObjects = [];
         delete this.player;
@@ -377,19 +412,22 @@ class Rooms2 extends CanvasGame{
 
             let collision = this.checkObjectCollisionIndex(this.player, this.thingObjects, false);
             if( collision.isCollided === true ) {
-                this.sounds.map( sound => { if( sound[0] === "collect" ) sound[1].play(); } );
+                if(this.activateSound === 1){
+                    this.sounds.map( sound => { if( sound[0] === "collect" ) sound[1].play(); } );
+                }
                 this.thingObjects.splice( collision.index, 1 );
                 this.numberOfCollectedItems++;
             }
 
-            let play = false;
+            this.playSound = true;
             while( this.checkObjectCollisionBoolean(this.player, this.wallObjects, true) ){
-                if( play === false ){
+                if( this.playSound === true && this.activateSound === 1){
                     this.sounds.map( sound => { if( sound[0] === "bounce" ) sound[1].play(); } );
-                    play = true;
+                    this.playSound = false;
                 }
                 this.player.setNewDirection();
             };
+            this.playSound = false;
 
             this.drawRooms();
             this.drawGrid();
@@ -398,9 +436,20 @@ class Rooms2 extends CanvasGame{
             this.player.speedX = 0;
             this.player.speedY = 0;
             this.drawRooms();
-            this.drawResult( this.checkResults === 1 );
+
+            this.drawResult( this.checkResults === 1, true );
             this.drawGrid();
             this.stopGame();
+
+            if( this.checkResults === 1 ){
+                this.thingObjects = [];
+                delete this.player;
+                this.currentLevel++;
+                this.maxTime = ( 100 - ( this.currentLevel * 10 ) ) * 1000;
+                this.startGame();
+            } else {
+                // loose
+            }
         };
     }
 
@@ -412,19 +461,31 @@ class Rooms2 extends CanvasGame{
 
     drawScoreAndTime(){
         if( this.started === true ){
-            this.ctx.font = "18px pxplus_ibm_vga9regular";
             this.ctx.fillStyle = "black";
             this.ctx.textAlign = "left";
 
-            let score = this.numberOfCollectedItems.padDigits(3);
-            let time = `${Math.floor(this.leftTime/1000).padDigits(3)} sec`;
+            let items = this.numberThings - this.numberOfCollectedItems.padDigits(2);
+            let time = Math.floor(this.leftTime/1000).padDigits(2);
 
-            this.ctx.fillText ( `Score: ${score}`, (15).mx(), (11).mx());                  
-            this.ctx.fillText ( `Time:  ${time}`, (15).mx(), (12).mx());  
+            this.ctx.font = "20px " + this.font;
+            this.ctx.fillText ( `Level ${this.currentLevel}`, (15).mx(), (11.5).mx());                  
+            this.ctx.font = "16px " + this.font;
+            this.ctx.fillText ( `items left: ${items}`, (15).mx(), (13).mx());                  
+            this.ctx.fillText ( `time left: ${time} s`, (15).mx(), (14).mx());  
         }       
     }
 
-    drawResult( win ){
+    drawResult( win, sound ){
+        let txt = [ 
+            [ "G A M E   O V E R", "L E V E L   E N D" ],
+            [ "YOU LOST", "YOU WIN "],
+            [ "level #1 with #2 pts !", "level #1 with #2 pts in #3 sec !"],
+            [ "total: #1 pts !", "total: #1 pts !"]
+        ]
+        let outTxt = "";
+
+        let txtId = win === true ? 1 : 0;
+
         this.ctx.fillStyle = this.color[this.curColor];
         this.ctx.fillRect( (5).mx(), (5).mx(), (30).mx(), (15).mx() );
 
@@ -432,24 +493,35 @@ class Rooms2 extends CanvasGame{
         this.ctx.lineWidth = 2.5;
         this.ctx.strokeRect( (6).mx(), (6).mx(), (28).mx(), (13).mx() );
 
-        this.ctx.font = "40px pxplus_ibm_vga9regular";
+        this.ctx.font = "36px " + this.font;
         this.ctx.fillStyle = "black";
-        
         this.ctx.textAlign = "center";
-        this.ctx.fillText ( `G A M E   O V E R`, (20).mx(), (9).mx());                  
-        
-        if( win === true ){
-            this.ctx.font = "70px pxplus_ibm_vga9regular";
-            this.ctx.fillText ( `YOU WIN`, (20).mx(), (14).mx());                  
-            this.ctx.font = "20px pxplus_ibm_vga9regular";
-            let usedTime = Math.floor((this.maxTime - this.leftTime)/1000);
-            this.ctx.fillText ( `in ${usedTime} seconds !`, (20).mx(), (17).mx()); 
-            this.sounds.map( sound => { if( sound[0] === "win" ) sound[1].play(); } );     
-        } else {
-            this.ctx.font = "70px pxplus_ibm_vga9regular";
-            this.ctx.fillText ( `YOU LOOSE`, (20).mx(), (14).mx());                  
-            this.ctx.font = "20px pxplus_ibm_vga9regular";
-            this.ctx.fillText ( `Sorry, try again!`, (20).mx(), (17).mx());                  
+
+        this.ctx.fillText ( txt[0][txtId], (20).mx(), (9).mx());                  
+        this.ctx.font = "50px " + this.font;
+        this.ctx.fillText ( txt[1][txtId], (20).mx(), (12.5).mx());                  
+
+        let levelScore = this.calcPoint();
+        let usedTime = Math.floor((this.maxTime - this.leftTime)/1000);
+        outTxt = txt[2][txtId];
+        outTxt = outTxt.replace( "#1", this.currentLevel );
+        outTxt = outTxt.replace( "#2", levelScore );
+        outTxt = outTxt.replace( "#3", usedTime );
+
+        this.ctx.font = "18px " + this.font;
+        this.ctx.fillText ( outTxt, (20).mx(), (15).mx());
+
+        this.totalScore += levelScore;
+        outTxt = txt[3][txtId];
+        outTxt = outTxt.replace( "#1", this.totalScore );
+        this.ctx.fillText ( outTxt, (20).mx(), (17).mx());
+
+        if( sound === true && this.activateSound === 1) {
+            if( win === true ){        
+                this.sounds.map( sound => { if( sound[0] === "win" ) sound[1].play(); } );     
+            } else {
+                // loosing sound --- this.sounds.map( sound => { if( sound[0] === "loose" ) sound[1].play(); } );     
+            }    
         }
     }
 
@@ -458,6 +530,11 @@ class Rooms2 extends CanvasGame{
         this.wallObjects.map( (wallObject) => {wallObject.update(); } );
         this.thingObjects.map( (thingObject) => {thingObject.update(); } );
         if( this.player !== undefined && this.checkResults === 0) this.player.update();
+    }
+
+    calcPoint(){
+        return (Math.floor(this.leftTime/1000) * this.currentLevel * 10) + 
+               (this.numberOfCollectedItems * this.currentLevel * 2);
     }
 
     clearCanvas(){

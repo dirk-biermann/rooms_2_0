@@ -11,16 +11,29 @@ function changeCSSColor(id) {
     }
 }
 
-function changeBtnSelection(id){
+function changeColorBtnSelection(type, id){
     let control_btn = document.getElementById("control-btn");
     let btn_list = control_btn.getElementsByClassName("btn");
 
     [...btn_list].forEach( (btn, ind) => {
-            if( btn.id.startsWith("chg-color") ) {
-                btn.classList.toggle("selected", ind === id+1 );
+            if( btn.id.startsWith(type) ) {
+                btn.classList.toggle("selected", ind === id );
             }
         });
 }
+
+function changeSoundBtnSelection(type, id){
+    let control_btn = document.getElementById("control-btn");
+    let btn_list = control_btn.getElementsByClassName("btn");
+
+    [...btn_list].forEach( (btn, ind) => {
+            if( btn.id.startsWith(type) ) {
+                btn.classList.toggle("selected");
+            }
+        });
+}
+
+/*
 
 function sound(src) {
     this.sound = document.createElement("audio");
@@ -36,4 +49,6 @@ function sound(src) {
         this.sound.pause();
     }    
 }
+
+*/
 
