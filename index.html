@@ -4,26 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script type="text/javascript" src="./js/basic.js"></script>
+    <script type="text/javascript" src="./js/rooms.js"></script>
+    <link rel="stylesheet" type="text/css" href="./css/color-green.css"/>
+    <link rel="stylesheet" type="text/css" media="none" href="./css/color-amber.css"/>
+    <link rel="stylesheet" type="text/css" media="none" href="./css/color-gray.css"/>
+    <link rel="stylesheet" type="text/css" href="./css/font.css">
+    <link rel="stylesheet" type="text/css" href="./css/basic.css">
+    <link rel="stylesheet" type="text/css" href="./css/rooms.css">
+    
     <link rel="shortcut icon" type="image/png" href="./favicon.png"/>
     <link rel="shortcut icon" type="image/png" href="https://dirk-biermann.github.io/rooms_2_0/favicon.png"/>
-    <script type="text/javascript" src="./js/rooms.js"></script>
-    <link rel="stylesheet" href="./css/font.css">
-    <link rel="stylesheet" href="./css/basic.css">
-    <link rel="stylesheet" href="./css/rooms.css">
     <title>Rooms 2.0</title>
 </head>
 
-<body>
+<body class="txtColor">
     <div class="flex-center h-100pc w-100pc">
-        <div id="area">
+        <div id="area" class="boxShadow brdColorDark">
             <header>
-                <h1 class="ls-10"><i>ROOMS 2.0</i></h1>
+                <h1 class="txtShadow ls-10"><i>ROOMS 2.0</i></h1>
                 <h4 class="ls-4">Run &amp; Collect - Retro Game</h4>
-                <hr>
+                <hr class="brdColor">
             </header>
             <section class="flex flex-row-c-c">
                 <div id="control" class="">
-                    <div id="instruction">
+                    <div id="instruction" class="txtColorSemi">
                         <p class="ls-4"><u>Instructions:</u></p>
                         <br>
                         <p class="indent">Use arrow keys to move your player '&#x2592;'. </p>
@@ -35,18 +40,37 @@
                         <br>
                         <p class="indent">Collect all things '&#x263C;' in all rooms<br>as fast as you can.</p> 
                     </div>
-                    <hr>
-                    <div id="start-button" class="btn">
-                        <p class="ls-2">&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2556;</p>
-                        <p class="ls-4">&#x2502;<span id="btn-txt">start game</span>&#x2551;</p>
-                        <p class="ls-2">&#x2558;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;</p>
+                    <hr class="brdColor">
+                    <div class="flex-row-c-c">
+                        <div id="start-button" class="btn">
+                            <p class="ls-2">&#x250C;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2500;&#x2556;</p>
+                            <p class="ls-4">&#x2502;<span id="btn-txt">start game</span>&#x2551;</p>
+                            <p class="ls-2">&#x2558;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x2550;&#x255D;</p>
+                        </div>
+                        <div style="flex-grow: 1;">&nbsp;</div>
+                        <div><p>Color:</p></div>
+                        <div id="chg-color-g" class="btn">
+                            <p class="ls-2">&#x250C;&#x2500;&#x2556;</p>
+                            <p class="ls-2">&#x2502;<span id="btn-txt">G</span>&#x2551;</p>
+                            <p class="ls-2">&#x2558;&#x2550;&#x255D;</p>
+                        </div>
+                        <div id="chg-color-a" class="btn">
+                            <p class="ls-2">&#x250C;&#x2500;&#x2556;</p>
+                            <p class="ls-2">&#x2502;<span id="btn-txt">A</span>&#x2551;</p>
+                            <p class="ls-2">&#x2558;&#x2550;&#x255D;</p>
+                        </div>
+                        <div id="chg-color-w" class="btn">
+                            <p class="ls-2">&#x250C;&#x2500;&#x2556;</p>
+                            <p class="ls-2">&#x2502;<span id="btn-txt">W</span>&#x2551;</p>
+                            <p class="ls-2">&#x2558;&#x2550;&#x255D;</p>
+                        </div>    
                     </div>
                 </div>
                 <div id="canvas" class="">
                 </div>
             </section>
             <footer>
-                <hr>
+                <hr class="brdColor">
                 <p class="ls-2">(c) 1980-2019 by D.W.B</p>
             </footer>
         </div>

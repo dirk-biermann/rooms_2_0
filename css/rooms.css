@@ -7,22 +7,15 @@ h6 { font-size: 1.0rem; }
 
 p { font-size: 1.5rem; }
 
-header h1 {
-    text-shadow: 0px 0px 20px #25E525;
-}
-
 #area {
-    box-shadow:0px 0px 45px 20px #25E52555;
     padding: 40px;
-    border: 2px solid #25E52555;
+    border-style: solid;
+    border-width: 2px;
     border-radius: 20px;
 }
 
 #area #control {
     padding-right:20px;
-}
-#instruction {
-    color: #00ff00cc;
 }
 
 .indent {
@@ -32,10 +25,6 @@ header h1 {
 .btn {
     cursor: pointer;
     display: inline-block;
-}
-
-.btn:hover {
-    color: #25E52599;
 }
 
 .btn p {

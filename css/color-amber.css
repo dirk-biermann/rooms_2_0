@@ -1,0 +1,12 @@
+/* EEBF00 / FFBF00 */
+
+.txtColor { color: #FFBF00; }
+.txtColorSemi { color: #FFBF00cc; }
+
+.brdColor { border-color: #FFBF00; }
+.brdColorDark { border-color: #EEBF0055; }
+
+.btn:hover { color: #EEBF0099; }
+
+.txtShadow { text-shadow: 0px 0px 20px #EEBF00; }
+.boxShadow { box-shadow:0px 0px 45px 20px #EEBF0055; }

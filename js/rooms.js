@@ -15,7 +15,7 @@ Number.prototype.padDigits = function(digits) {
 }
 
 window.onload = function() {
-    newRooms = new Rooms2( "canvas", (40).mx(), (25).mx() ); 
+    let newRooms = new Rooms2( "canvas", (40).mx(), (25).mx(), 0 ); 
 
     document.getElementById("start-button").onclick = function() {
         if( newRooms.started === false ) {
@@ -26,6 +26,19 @@ window.onload = function() {
             newRooms.resetGame(); 
         }
     };
+    document.getElementById("chg-color-g").onclick = function() {
+        changeCSSColor(0);
+        newRooms.chgColor(0);
+    };
+    document.getElementById("chg-color-a").onclick = function() {
+        changeCSSColor(1);
+        newRooms.chgColor(1);
+    };
+    document.getElementById("chg-color-w").onclick = function() {
+        changeCSSColor(2);
+        newRooms.chgColor(2);
+    };
+
 };
 
 // -------------------------------------------------------------------
@@ -56,6 +69,10 @@ class Rectangle{
         this.y = y;
         this.ctx = ctx;
         this.id = "rect";
+    }
+
+    chgColor( color ){
+        this.color = color;
     }
 
     update() {
@@ -112,6 +129,10 @@ class MovingRectangle extends Rectangle{
         this.id = "moving-rect";
     }
 
+    chgColor( color ){
+        super.chgColor(color);
+    }
+
     update() {
         this.x += this.speedX;
         this.y += this.speedY;
@@ -131,24 +152,34 @@ class MovingRectangle extends Rectangle{
 // CLASS | wall object
 // -------------------------------------------------------------------
 class Wall extends Rectangle{
-    constructor(x, y, width, height, ctx){
-        super(x, y, width, height, "#25E525", ctx);
+    constructor(x, y, width, height, color, ctx){
+        super(x, y, width, height, color, ctx);
         this.id = "wall";
     }
+    chgColor( color ){
+        super.chgColor(color);
+    }
+
 }
 
 // -------------------------------------------------------------------
 // CLASS | thing object
 // -------------------------------------------------------------------
 class Thing extends Rectangle{
-    constructor(x, y, ctx, img){
-        super(x, y, (1).mx(), (1).mx(), "#25E52555", ctx);
+    constructor(x, y, color, ctx, img){
+        super(x, y, (1).mx(), (1).mx(), "#000", ctx);
         this.id = "thing";
+        this.color = color;
 
         this.thingImage = img;
     }
+
+    chgColor( color ){
+        this.color = color;
+    }
+
     update(){
-        this.ctx.drawImage(this.thingImage,0,0,this.thingImage.width, this.thingImage.height, this.x, this.y, this.width, this.height);
+        this.ctx.drawImage(this.thingImage,(Number(this.color)).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
 }
@@ -157,11 +188,12 @@ class Thing extends Rectangle{
 // CLASS | player object
 // -------------------------------------------------------------------
 class Player extends MovingRectangle{
-    constructor(x, y, ctx, img){
-        super(x, y, (1).mx(), (1).mx(), "#25E52555", ctx);
+    constructor(x, y, color, ctx, img){
+        super(x, y, (1).mx(), (1).mx(), "#000", ctx);
         this.id = "player";
         
         this.playerImage = img;
+        this.color = color;
 
         document.onkeyup = e => {
             switch (e.keyCode) {
@@ -190,10 +222,14 @@ class Player extends MovingRectangle{
         };
     }
 
+    chgColor( color ){
+        this.color = color;
+    }
+
     update(){
         this.x += this.speedX;
         this.y += this.speedY;
-        this.ctx.drawImage(this.playerImage,0,0,this.playerImage.width, this.playerImage.height, this.x, this.y, this.width, this.height);
+        this.ctx.drawImage(this.playerImage,(this.color).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
     setNewDirection(){
@@ -211,10 +247,13 @@ class Player extends MovingRectangle{
 // CLASS | ROOMS 2.0 canvas game
 // -------------------------------------------------------------------
 class Rooms2 extends CanvasGame{
-    constructor(container, width, height){
+    constructor(container, width, height, color){
         super(container, width, height);
         this.wallObjects = [];
         this.thingObjects = [];
+
+        this.color = [ "#25E525", "#EEBF00", "#B7B7B7" ];
+        this.curColor = color;
 
         this.playerImage = new Image();
         this.playerImage.src = "./images/player.png";
@@ -235,16 +274,29 @@ class Rooms2 extends CanvasGame{
         this.drawRooms();
         this.drawGrid();
         this.drawScoreAndTime();
+
+    }
+
+    chgColor( id ){
+        this.curColor = id;
+
+        if( this.player !== undefined ) { this.player.chgColor( id ); }
+        this.wallObjects.map( (wallObject) => {wallObject.chgColor( this.color[id] ); } );
+        this.thingObjects.map( (thingObject) => {thingObject.chgColor( id ); } );
+
+        this.drawRooms();
+        this.drawGrid();
+        this.drawScoreAndTime();
     }
 
     startGame(){
         this.started = true;
-        this.numberOfCollextedItems = 0;
+        this.numberOfCollectedItems = 0;
         this.leftTime = this.maxTime;
 
         this.createThings(25);
 
-        this.player = new Player((1).mx(), (1).mx(), this.ctx, this.playerImage);
+        this.player = new Player((1).mx(), (1).mx(), this.curColor, this.ctx, this.playerImage);
         this.player.setNewDirection();
         this.insertXYIntoObject( this.player );        
 
@@ -254,54 +306,53 @@ class Rooms2 extends CanvasGame{
     }
 
     stopGame(){
-        this.started = false;
         clearInterval(this.interval);
     }
 
     resetGame(){
         this.stopGame();
+        this.started = false;
 
         this.thingObjects = [];
         delete this.player;
-
         this.drawRooms();
         this.drawGrid();
     }
 
     createRooms(){
         // outer walls
-        this.wallObjects.push( new Wall(0,0,(40).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((39).mx(),0,(40).mx(),(25).mx(),this.ctx))
-        this.wallObjects.push( new Wall(0,(24).mx(),(40).mx(),(25).mx(),this.ctx))
-        this.wallObjects.push( new Wall(0,0,(1).mx(),(24).mx(),this.ctx))
+        this.wallObjects.push( new Wall(0,0,(40).mx(),(1).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((39).mx(),0,(40).mx(),(25).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall(0,(24).mx(),(40).mx(),(25).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall(0,0,(1).mx(),(24).mx(),this.color[this.curColor],this.ctx))
 
         // inner block
-        this.wallObjects.push( new Wall((14).mx(),(10).mx(),(12).mx(),(5).mx(),this.ctx))
+        this.wallObjects.push( new Wall((14).mx(),(10).mx(),(12).mx(),(5).mx(),this.color[this.curColor],this.ctx))
     
         // horizontal walls inkl.door
-        this.wallObjects.push( new Wall((1).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((8).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
+        this.wallObjects.push( new Wall((1).mx(),(12).mx(),(6).mx(),(1).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((8).mx(),(12).mx(),(6).mx(),(1).mx(),this.color[this.curColor],this.ctx))
 
-        this.wallObjects.push( new Wall((26).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
-        this.wallObjects.push( new Wall((33).mx(),(12).mx(),(6).mx(),(1).mx(),this.ctx))
+        this.wallObjects.push( new Wall((26).mx(),(12).mx(),(6).mx(),(1).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((33).mx(),(12).mx(),(6).mx(),(1).mx(),this.color[this.curColor],this.ctx))
 
         // vertical walls inkl.door
-        this.wallObjects.push( new Wall((14).mx(),(1).mx(),(1).mx(),(2).mx(),this.ctx))
-        this.wallObjects.push( new Wall((14).mx(),(4).mx(),(1).mx(),(6).mx(),this.ctx))
+        this.wallObjects.push( new Wall((14).mx(),(1).mx(),(1).mx(),(2).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((14).mx(),(4).mx(),(1).mx(),(6).mx(),this.color[this.curColor],this.ctx))
 
-        this.wallObjects.push( new Wall((25).mx(),(1).mx(),(1).mx(),(6).mx(),this.ctx))
-        this.wallObjects.push( new Wall((25).mx(),(8).mx(),(1).mx(),(2).mx(),this.ctx))
+        this.wallObjects.push( new Wall((25).mx(),(1).mx(),(1).mx(),(6).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((25).mx(),(8).mx(),(1).mx(),(2).mx(),this.color[this.curColor],this.ctx))
 
-        this.wallObjects.push( new Wall((14).mx(),(15).mx(),(1).mx(),(2).mx(),this.ctx))
-        this.wallObjects.push( new Wall((14).mx(),(18).mx(),(1).mx(),(6).mx(),this.ctx))
+        this.wallObjects.push( new Wall((14).mx(),(15).mx(),(1).mx(),(2).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((14).mx(),(18).mx(),(1).mx(),(6).mx(),this.color[this.curColor],this.ctx))
 
-        this.wallObjects.push( new Wall((25).mx(),(15).mx(),(1).mx(),(6).mx(),this.ctx))
-        this.wallObjects.push( new Wall((25).mx(),(22).mx(),(1).mx(),(2).mx(),this.ctx))
+        this.wallObjects.push( new Wall((25).mx(),(15).mx(),(1).mx(),(6).mx(),this.color[this.curColor],this.ctx))
+        this.wallObjects.push( new Wall((25).mx(),(22).mx(),(1).mx(),(2).mx(),this.color[this.curColor],this.ctx))
     }
 
     createThings( numberThings ){
         for( let id=0; id < numberThings; id++ ){
-            this.thingObjects.push( new Thing(0,0,this.ctx, this.thingImage) );
+            this.thingObjects.push( new Thing(0,0,this.curColor,this.ctx, this.thingImage) );
             this.insertXYIntoObject(this.thingObjects[id]);
         }
     }
@@ -323,6 +374,8 @@ class Rooms2 extends CanvasGame{
             this.drawGrid();
             this.drawScoreAndTime();
         } else {
+            this.player.speedX = 0;
+            this.player.speedY = 0;
             this.drawRooms();
             this.drawResult( checkResult === 1 );
             this.drawGrid();
@@ -355,7 +408,7 @@ class Rooms2 extends CanvasGame{
     }
 
     drawResult( win ){
-        this.ctx.fillStyle = "#25E525";
+        this.ctx.fillStyle = this.color[this.curColor];
         this.ctx.fillRect( (5).mx(), (5).mx(), (30).mx(), (15).mx() );
 
         this.ctx.strokeStyle  = "black";
