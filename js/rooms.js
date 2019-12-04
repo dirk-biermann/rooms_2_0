@@ -446,11 +446,14 @@ class Rooms2 extends CanvasGame{
                 delete this.player;
                 this.currentLevel++;
                 this.maxTime = ( 100 - ( this.currentLevel * 10 ) ) * 1000;
-                this.startGame();
+                this.sleep(3000).then( () => { this.startGame(); } );
             } else {
                 // loose
             }
         };
+    }
+    sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     checkGameOver(){
