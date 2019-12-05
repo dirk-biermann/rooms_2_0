@@ -1,0 +1,15 @@
+/* d926ac / ff33cc */
+
+.bkgColor { background-color: #ff33cc; }
+.bkgColorSemi { background-color: #ff33cccc; }
+
+.txtColor { color: #ff33cc; }
+.txtColorSemi { color: #ff33cccc; }
+
+.brdColor { border-color: #ff33cc; }
+.brdColorDark { border-color: #d926ac55; }
+
+.btn:hover { color: #d926ac99; }
+
+.txtShadow { text-shadow: 0px 0px 20px #d926ac; }
+.boxShadow { box-shadow:0px 0px 45px 20px #d926ac55; }
