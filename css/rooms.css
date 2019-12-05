@@ -41,6 +41,12 @@ p { font-size: 1.5rem; }
     content: "Y";
 }
 
+#thing { 
+    width:16px; 
+    height:16px; 
+    background-image: url(../images/thing_mask.png);
+    display: inline-block;
+}
 
 .fish { margin-left: 30px; }
 

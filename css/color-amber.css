@@ -1,6 +1,7 @@
 /* EEBF00 / FFBF00 */
 
 .bkgColor { background-color: #FFBF00; }
+.bkgColorSemi { background-color: #FFBF00cc; }
 
 .txtColor { color: #FFBF00; }
 .txtColorSemi { color: #FFBF00cc; }
