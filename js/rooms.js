@@ -11,7 +11,7 @@
 // -------------------------------------
 
 Number.prototype.mx = function() {
-  return Math.floor(this * 16);
+  return Math.round(this * 16);
 }
 
 Number.prototype.padDigits = function(digits) {
@@ -46,19 +46,32 @@ window.onload = function() {
         newRooms.toggleSound();
     };
     document.getElementById("chg-color-g").onclick = function() {
-        changeCSSColor(0);
-        changeColorBtnSelection("chg-color", 2);
-        newRooms.chgColor(0);
+        if( newRooms.started === false ){
+            changeCSSColor(0);
+            changeColorBtnSelection("chg-color", 2);
+            newRooms.chgColor(0);
+        }
     };
     document.getElementById("chg-color-a").onclick = function() {
-        changeCSSColor(1);
-        changeColorBtnSelection("chg-color", 3);
-        newRooms.chgColor(1);
+        if( newRooms.started === false ){
+            changeCSSColor(1);
+            changeColorBtnSelection("chg-color", 3);
+            newRooms.chgColor(1);
+        }
     };
     document.getElementById("chg-color-w").onclick = function() {
-        changeCSSColor(2);
-        changeColorBtnSelection("chg-color", 4);
-        newRooms.chgColor(2);
+        if( newRooms.started === false ){
+            changeCSSColor(2);
+            changeColorBtnSelection("chg-color", 4);
+            newRooms.chgColor(2);
+        }
+    };
+    document.getElementById("chg-color-p").onclick = function() {
+        if( newRooms.started === false ){
+            changeCSSColor(3);
+            changeColorBtnSelection("chg-color", 5);
+            newRooms.chgColor(3);
+        }
     };
 
 };
@@ -110,18 +123,23 @@ class Rectangle{
         this.id = "rect";
     }
 
+    // update object
     update() {
         this.ctx.fillStyle = this.color;
         this.ctx.fillRect(this.x, this.y, this.width, this.height);
     }
 
-    left() { return Math.floor(this.x); }
-    right() { return Math.floor(this.x + this.width); }
-    top() { return Math.floor(this.y); }
-    bottom() { return Math.floor(this.y + this.height); }
+    // transform dimensions
+    left() { return Math.round(this.x); }
+    right() { return Math.round(this.x + this.width); }
+    top() { return Math.round(this.y); }
+    bottom() { return Math.round(this.y + this.height); }
 
+    // check collision
     isCollidedWith(obstacle, inclSpeed) {
-        //since the player is also a gameObject we have to make sure that it doesn't "collide" with itself
+
+        // since the player is also a gameObject we have to 
+        // make sure that it doesn't "collide" with itself
         if (this === obstacle) return false;
 
         if( inclSpeed === true ) {
@@ -143,6 +161,7 @@ class Rectangle{
         return isCollided;
     }
 
+    // change object color
     chgColor( color ){ this.color = color; }
 }
 
@@ -157,12 +176,14 @@ class MovingRectangle extends Rectangle{
         this.id = "moving-rect";
     }
 
+    // update object
     update() {
         this.x += this.speedX;
         this.y += this.speedY;
         super.update();
     }
     
+    // change object color
     chgColor( color ){ super.chgColor(color); }
 }
 
@@ -180,6 +201,7 @@ class Wall extends Rectangle{
         this.id = "wall";
     }
 
+    // change object color
     chgColor( color ){ super.chgColor(color); }
 }
 
@@ -198,6 +220,7 @@ class Thing extends Rectangle{
         this.ctx.drawImage(this.thingImage,(Number(this.color)).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
+    // update object
     chgColor( color ){ this.color = color; }
 }
 
@@ -226,6 +249,7 @@ class Player extends MovingRectangle{
         document.addEventListener('keyup',  ev => { return this.onKey(ev, ev.keyCode, false); }, false );
     }
 
+    // player key control
     onKey(ev, key, pressed) {
         if( !pressed ) return;
         switch(key) {
@@ -255,12 +279,14 @@ class Player extends MovingRectangle{
         }
     }
 
+    // update object
     update(){
         this.x += this.speedX;
         this.y += this.speedY;
         this.ctx.drawImage(this.playerImage,(this.color).mx(),0,this.width, this.height, this.x, this.y, this.width, this.height);
     }
 
+    // randomly choose new direction after bouncing at walls
     setNewDirection(){
         let dir = Math.floor( Math.random() * 12 );
         switch(dir%4) {
@@ -271,6 +297,7 @@ class Player extends MovingRectangle{
         }
     }
 
+    // change object color
     chgColor( color ){ this.color = color; }
 }
 
@@ -284,7 +311,7 @@ class Rooms2 extends CanvasGame{
         this.wallObjects = [];
         this.thingObjects = [];
 
-        this.colorList = [ "#25E525", "#EEBF00", "#B7B7B7" ];
+        this.colorList = [ "#25E525", "#EEBF00", "#B7B7B7", "#D926AC" ];
         this.curColor = color;
 
         this.sounds = [];
@@ -301,12 +328,12 @@ class Rooms2 extends CanvasGame{
         
         this.leftTimeMSec = 0;
         this.currentLevel = 1;
-        this.initTimeSec = 20;
+        this.initTimeSec = 90;
         this.maxTimeSec = this.initTimeSec;
         this.numberOfCollectedItems = 0;
         this.timeFrameMSec = 100;
         this.totalScore = 0;
-        this.numberThings = 5;
+        this.numberThings = 25;
 
         this.checkResults = 0;
         this.playSound = true;
@@ -320,6 +347,7 @@ class Rooms2 extends CanvasGame{
         this.drawGrid();
     }
     
+    // initialize game board
     initGameboard(){
         this.started = true;
         this.numberOfCollectedItems = 0;
@@ -329,19 +357,22 @@ class Rooms2 extends CanvasGame{
 
         this.player = new Player((1).mx(), (1).mx(), this.curColor, this.ctx, this.playerImage);
         this.player.setNewDirection();
-        this.insertXYIntoObject( this.player );        
+        this.placeObjectIntoGameboard( this.player );        
     }
 
+    // start the GAME
     startGame(){
         // bind func 'updateIslandRacerState' to be available in 'setInterval()'
         this.updateRooms = this.updateRooms.bind(this);
         this.interval = setInterval(this.updateRooms, this.timeFrameMSec);
     }
 
+    // stop the GAME
     stopGame(){
         clearInterval(this.interval);
     }
 
+    // reset game board to start conditions
     resetGameboard(){
         this.stopGame();
         this.started = false;
@@ -356,6 +387,7 @@ class Rooms2 extends CanvasGame{
         this.drawGrid();
     }
 
+    // create walls of rooms
     createRooms(){
         let walls = [
                         [ 0, 0,40, 1], [39, 0,40,25], [ 0,24,40,25], [ 0, 0, 1,24], // outer walls
@@ -370,13 +402,15 @@ class Rooms2 extends CanvasGame{
             } );
     }
 
+    // create randomly thing inside the rooms
     createThings( numberThings ){
         for( let id=0; id < numberThings; id++ ){
             this.thingObjects.push( new Thing(0,0,this.curColor,this.ctx, this.thingImage) );
-            this.insertXYIntoObject(this.thingObjects[id]);
+            this.placeObjectIntoGameboard(this.thingObjects[id]);
         }
     }
 
+    // update all game objects, incl. text output
     updateRooms() {
         this.checkResults = this.checkGameOver();
         if ( this.checkResults === 0 ) {
@@ -409,7 +443,7 @@ class Rooms2 extends CanvasGame{
             this.player.speedY = 0;
             this.drawRooms();
 
-            this.drawResult( this.checkResults === 1, true );
+            this.drawEndResult( this.checkResults === 1, true );
             this.drawGrid();
 
             this.stopGame();
@@ -422,51 +456,61 @@ class Rooms2 extends CanvasGame{
                 this.drawStartLevel(5,5);
 
             } else {
-                // loose
+                // loose - do nothing
             }
         };
     }
     
+    // sleep for x milli-seconds
     sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    // check run out of time or collect all things
     checkGameOver(){
         if( this.leftTimeMSec <= 0 && this.thingObjects.length > 0 ){ return -1; }
         if( this.thingObjects.length === 0 ){ return 1; }
         return 0;
     }
 
+    // draw score and left time
     drawScoreAndTime(){
         if( this.started === true ){
             this.ctx.fillStyle = "black";
 
             let items = this.numberThings - this.numberOfCollectedItems.padDigits(2);
-            let time = Math.floor(this.leftTimeMSec/1000).padDigits(2);
+            let time = Math.round(this.leftTimeMSec/1000).padDigits(2);
+
+            this.ctx.lineWidth = 2.5;
+            this.ctx.strokeRect( (14.5).mx(), (10.5).mx(), (11).mx(), (4).mx() );
 
             this.ctx.textAlign = "center";
             this.ctx.font = "20px " + this.font;
-            this.ctx.fillText ( `Level ${this.currentLevel}`, (20).mx(), (11.5).mx());                  
-            this.ctx.font = "16px " + this.font;
-            this.ctx.textAlign = "left";
-            this.ctx.fillText ( `items: ${items}`, (15).mx(), (13).mx());                  
-            this.ctx.fillText ( ` time: ${time} s`, (15).mx(), (14).mx());  
+            this.ctx.fillText ( `LEVEL ${this.currentLevel}`, (20).mx(), (11.9).mx());                  
+            this.ctx.font = "14px " + this.font;
+            this.ctx.fillText ( `items ${items}`, (20).mx(), (13).mx());                  
+            this.ctx.fillText ( ` time ${time} s`, (20).mx(), (14).mx());  
         }       
     }
 
+    // draw rooms logo in case of no score will be shown
     drawRoomsLogo(){
         this.ctx.fillStyle = "black";
         this.ctx.textAlign = "center";
+
+        this.ctx.lineWidth = 2.5;
+        this.ctx.strokeRect( (14.5).mx(), (10.5).mx(), (11).mx(), (4).mx() );
 
         this.ctx.font = "26px " + this.font;
         this.ctx.fillText ( `ROOMS 2.0`, (20).mx(), (13).mx());                  
     }
 
+    // draw waiting info after finishing level successfully
     drawStartLevel(max, cnt){
         this.ctx.textAlign = "left";
 
         if( cnt > 0 ){
-            this.ctx.fillText ( `next level in ${max} sec !  [.${".".repeat(max-cnt)}${" ".repeat(cnt-1)}]`, (9).mx(), (18).mx());
+            this.ctx.fillText ( `next level in ${max} sec !   .${".".repeat(max-cnt)}`, (9).mx(), (18).mx());
             this.sleep(1000).then( () => { this.drawStartLevel(max, cnt-1);  } );
         } else {
             this.initGameboard();
@@ -474,7 +518,8 @@ class Rooms2 extends CanvasGame{
         }
     }
 
-    drawResult( win, sound ){
+    // draw end result in case of LOOSE and WIN of level
+    drawEndResult( win, sound ){
         let txt = [ 
             [ "T I M E   O V E R", "L E V E L   E N D" ],
             [ "YOU LOST", "YOU WIN "],
@@ -505,7 +550,7 @@ class Rooms2 extends CanvasGame{
 
         // --- LEVEL / POINTS ---
         let levelScore = this.calcPoint();
-        let usedTime = Math.floor((this.maxTimeSec - Math.floor(this.leftTimeMSec)/1000));
+        let usedTime = Math.round((this.maxTimeSec - Math.round(this.leftTimeMSec)/1000));
         outTxt = txt[2][txtId];
         outTxt = outTxt.replace( "#1", this.currentLevel );
         outTxt = outTxt.replace( "#2", levelScore );
@@ -529,6 +574,12 @@ class Rooms2 extends CanvasGame{
         }
     }
 
+    // clear canvas for redrawing
+    clearCanvas(){
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    // draw all roomes (walls)
     drawRooms() {
         this.clearCanvas();
         this.wallObjects.map( (wallObject) => {wallObject.update(); } );
@@ -536,15 +587,7 @@ class Rooms2 extends CanvasGame{
         if( this.player !== undefined && this.checkResults === 0) this.player.update();
     }
 
-    calcPoint(){
-        return (Math.floor(this.leftTimeMSec/1000) * this.currentLevel * 10) + 
-               (this.numberOfCollectedItems * this.currentLevel * 2);
-    }
-
-    clearCanvas(){
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    }
-
+    // draw screen grid
     drawGrid() {
         this.ctx.strokeStyle = "#00000066";
         this.ctx.lineWidth = 0.5;
@@ -561,7 +604,8 @@ class Rooms2 extends CanvasGame{
         this.ctx.setLineDash([]);
     }
 
-    insertXYIntoObject( object ){
+    // insert new object into game board, incl. check collision with existing ones 
+    placeObjectIntoGameboard( object ){
         let collisionThing = false;
         let collisionWall = false;
 
@@ -573,7 +617,8 @@ class Rooms2 extends CanvasGame{
             collisionWall = this.checkObjectCollisionBoolean(object, this.wallObjects, false);
         } while( collisionThing || collisionWall )
     }
- 
+    
+    // check collision of object with list of objects
     checkObjectCollisionBoolean( objectToCheck, objectsToCheckWith, atOriginal ){
         let objectCollision = Boolean(objectsToCheckWith.some( (objectToCheckWith, index) => { 
                 let collision = objectToCheck.isCollidedWith(objectToCheckWith, atOriginal); 
@@ -582,6 +627,7 @@ class Rooms2 extends CanvasGame{
         return objectCollision;
     }
 
+    // check collision of object with list of objects
     checkObjectCollisionIndex( objectToCheck, objectsToCheckWith, atOriginal ){
         let indexFound = -1;
         let objectCollision = Boolean(objectsToCheckWith.some( (objectToCheckWith, index) => { 
@@ -592,14 +638,23 @@ class Rooms2 extends CanvasGame{
         return { isCollided: objectCollision, index : indexFound };
     }
 
+    // calculate score points for level
+    calcPoint(){
+        return (Math.round(this.leftTimeMSec/1000) * this.currentLevel * 10) + 
+            (this.numberOfCollectedItems * this.currentLevel * 2);
+    }
+
+    // toggles sound on/off
     toggleSound(){
         this.activateSound = 1 - this.activateSound;
     }
 
+    // add sound object to rooms
     addSound( name, sound ){
         this.sounds.push( [name, new Sound( sound )] );
     }
 
+    // change object color - here for whole rooms
     chgColor( id ){
         this.curColor = id;
 
@@ -609,8 +664,8 @@ class Rooms2 extends CanvasGame{
 
         this.drawRooms();
         this.drawGrid();
+        this.drawRoomsLogo()
         this.drawScoreAndTime();
-        if( this.checkResults !== 0 ) this.drawResult( this.checkResults === 1 );
+        //if( this.checkResults !== 0 ) this.drawEndResult( this.checkResults === 1 );
     }
-
 }

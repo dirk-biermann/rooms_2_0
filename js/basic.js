@@ -1,8 +1,9 @@
+// functions changing color of game via changing media-prop of css links
 function changeCSSColor(id) {
     let head = document.getElementsByTagName("head").item(0);
     let links = head.getElementsByTagName("link");
 
-    for( let i=0; i<3; i++ ){
+    for( let i=0; i<4; i++ ){
         if( i === id ) {
             links[i].media = 'screen';
         } else {
@@ -11,6 +12,7 @@ function changeCSSColor(id) {
     }
 }
 
+// functions changing button state for color buttons
 function changeColorBtnSelection(type, id){
     let control_btn = document.getElementById("control-btn");
     let btn_list = control_btn.getElementsByClassName("btn");
@@ -22,6 +24,7 @@ function changeColorBtnSelection(type, id){
         });
 }
 
+// functions changing button state for sound buttons
 function changeSoundBtnSelection(type, id){
     let control_btn = document.getElementById("control-btn");
     let btn_list = control_btn.getElementsByClassName("btn");
